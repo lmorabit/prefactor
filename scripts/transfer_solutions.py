@@ -25,6 +25,7 @@ def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='a
     for i in numpy.arange(len(sources)):
         calibrators.append(sources[i][0])
     calibrator = numpy.unique(calibrators)
+    calibrator = [c.decode() for c in calibrator]
     if len(calibrator) > 1:
         logging.error('There is more than one calibrator used in the target solution set: ' + str(calibrator) + '. No solutions will be transferred.')
         data.close()
