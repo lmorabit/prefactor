@@ -64,6 +64,7 @@
 ! min_length               =  50                                     ## minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
 ! overhead                 =  0.8                                    ## only use this fraction of the available memory for deriving the amount of data to be concatenated.
 ! min_separation           =  30                                     ## minimal accepted distance to an A-team source on the sky in degrees (will raise a WARNING)
+! max_separation_arcmin    =  1.0                                                                 ## maximum distance to the phase center for which a skymodel will be still accepted. Change with caution!
 
 ## job directory
 ! job_directory            =  input.output.job_directory             ## directory of the prefactor outputs
@@ -284,7 +285,6 @@ sky_cal.control.error_tolerance                             =   {{ error_toleran
 sky_cal.control.mapfile_in                                  =   combine_data_cal_map.output.mapfile
 sky_cal.control.inputkey                                    =   msfile
 sky_cal.argument.flags                                      =   [msfile]
-sky_cal.argument.mapfile_dir                                =   input.output.mapfile_dir
 sky_cal.argument.DirSkymodelCal                             =   {{ calibrator_path_skymodel }}
 sky_cal.argument.max_separation_arcmin                      =   {{ max_separation_arcmin }}
 
