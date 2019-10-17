@@ -106,7 +106,7 @@ pipeline.steps.concat      =  [combine_concat_map, ms_concat_target, expand_memo
 pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, add_missing_stations, h5exp_gsm, apply_phase]
 pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, add_missing_stations, h5exp_gsm,   apply_tec]
-pipeline.steps.finalize    =  [h5parm_name, structure_function, make_summary]
+pipeline.steps.finalize    =  [h5parm_name, structure_function, make_results_compress, make_summary]
 pipeline.steps.feedback    =  [make_msfiles_metadata]
 
 
