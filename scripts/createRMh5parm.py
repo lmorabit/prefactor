@@ -22,18 +22,16 @@ import logging
 def makesolset(MS, data, solset_name):
     solset = data.makeSolset(solset_name)
 
-    antennaFile = MS+"/ANTENNA"
     logging.info('Collecting information from the ANTENNA table.')
-    antennaTable = pt.table(antennaFile, ack=False)
+    antennaTable = pt.table(MS + "::ANTENNA", ack=False)
     antennaNames = antennaTable.getcol('NAME')
     antennaPositions = antennaTable.getcol('POSITION')
     antennaTable.close()
     antennaTable = solset.obj._f_get_child('antenna')
     antennaTable.append(list(zip(*(antennaNames,antennaPositions))))
 
-    fieldFile = MS + "/FIELD"
     logging.info('Collecting information from the FIELD table.')
-    fieldTable = pt.table(fieldFile, ack=False)
+    fieldTable = pt.table(MS + "::FIELD", ack=False)
     phaseDir = fieldTable.getcol('PHASE_DIR')
     pointing = phaseDir[0, 0, :]
     fieldTable.close()
@@ -63,7 +61,10 @@ def main(MSfiles, h5parmdb, solset_name = "sol000",timestepRM=300,
         into account when interpolating IONEX data. (0 is none, 1 is full)
     '''
 
-    mslist = MSfiles.lstrip('[').rstrip(']').replace(' ','').replace("'","").split(',')
+    try:
+        mslist = MSfiles.lstrip('[').rstrip(']').replace(' ','').replace("'","").split(',')
+    except AttributeError:
+        mslist = MSfiles
 
     if len(mslist) == 0:
         raise ValueError("Did not find any existing directory in input MS list!")
@@ -71,6 +72,21 @@ def main(MSfiles, h5parmdb, solset_name = "sol000",timestepRM=300,
     else:
         MS = mslist[0]
         pass
+
+    if not os.path.exists(h5parmdb):
+        logging.error('Could not find h5parmdb: ' + h5parmdb)
+        return(1)
+
+    data          = h5parm(h5parmdb, readonly=False)
+    if not solset_name in data.getSolsetNames():
+        makesolset(MS,data,solset_name)
+    solset        = data.getSolset(solset_name)
+    soltabs       = solset.getSoltabs()
+    station_names = sorted(solset.getAnt().keys())
+
+    if 'RMextract' in [s.name for s in soltabs]:
+        logging.warning('Soltab RMextract exists already. Skipping...')
+        return(0)
 
     #extract the timerange information
     (timerange,timestep,pointing,stat_names,stat_pos) = PosTools.getMSinfo(MS)
@@ -133,13 +149,25 @@ def main(MSfiles, h5parmdb, solset_name = "sol000",timestepRM=300,
             return -1
 
 
-
-    rmdict = getRM.getRM(MS,
+    if not proxyServer:
+	    rmdict = getRM.getRM(MS,
                          server    = ionex_server,
                          prefix    = ionex_prefix,
                          ionexPath = ionexPath,
                          timestep  = timestepRM,
                          earth_rot = earth_rot)
+    else:
+	    rmdict = getRM.getRM(MS,
+                         server    = ionex_server,
+                         prefix    = ionex_prefix,
+                         ionexPath = ionexPath,
+                         timestep  = timestepRM,
+                         earth_rot = earth_rot,
+                         proxy_server = proxyServer,
+                         proxy_type   = proxyType,
+                         proxy_port   = proxyPort,
+                         proxy_user   = proxyUser,
+                         proxy_pass   = proxyPass)
 
 
     if not rmdict:
@@ -149,20 +177,16 @@ def main(MSfiles, h5parmdb, solset_name = "sol000",timestepRM=300,
         else:
             raise ValueError("Couldn't get RM information from RMextract! (But I don't know why.)")
 
-    data          = h5parm(h5parmdb, readonly=False)
-    if not solset_name in data.getSolsetNames():
-        makesolset(MS,data,solset_name)
-    solset        = data.getSolset(solset_name)
-    station_names = sorted(solset.getAnt().keys())
-
-
     logging.info('Adding rotation measure values to: ' + solset_name + ' of ' + h5parmdb)
-    rm_vals=np.array([rmdict["RM"][stat.decode()].flatten() for stat in station_names])
+    rm_vals=np.array([rmdict["RM"][stat].flatten() for stat in station_names])
     new_soltab = solset.makeSoltab(soltype='rotationmeasure', soltabName='RMextract',
                                    axesNames=['ant', 'time'], axesVals=[station_names, rmdict['times']],
                                    vals=rm_vals,
                                    weights=np.ones_like(rm_vals, dtype=np.float16))
 
+    return 0
+
+    data.close()
 
 
     ########################################################################
@@ -170,7 +194,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Adds CommonRotationAngle to an H5parm from RMextract.')
 
-    parser.add_argument('MSfiles', type=str,
+    parser.add_argument('MSfiles', type=str, nargs='+',
                         help='MS for which the parmdb should be created.')
     parser.add_argument('h5parm', type=str,
                         help='H5parm to which the results of the CommonRotationAngle is added.')
@@ -184,12 +208,12 @@ if __name__ == '__main__':
                         help='Name of the h5parm solution set (default: sol000)')
     parser.add_argument('-t','--timestep', help=
                         'timestep in seconds. for values <=0 (default) the timegrid of the MS is used ',
-                        dest="timestep",type=float,default=300.)
-    parser.add_argument('-e','--smart_interpol', help=
+                        dest="timestep",type=float, default=300.)
+    parser.add_argument('-e','--smart_interpol', type=float, default=0, help=
                         'float parameter describing how much of Earth rotation is taken in to account \
                         in interpolation of the IONEX files. 1.0 means time interpolation assumes \
                         ionosphere rotates in opposite direction of the Earth. 0.0 (default) means \
-                        no rotation applied',dest="earth_rot",type=float,default=0)
+                        no rotation applied',dest="earth_rot",)
 
     args = parser.parse_args()
 
@@ -198,5 +222,5 @@ if __name__ == '__main__':
     logging.info("Working on: %s %s" % (MS, h5parmdb))
     main(MS, h5parmdb, ionex_server=args.server, ionex_prefix=args.prefix,
                  ionexPath=args.ionexpath, solset_name=args.solsetName,
-                 timestep=args.timestep, earth_rot=args.earth_rot)
+                 timestepRM=args.timestep, earth_rot=args.earth_rot)
 
