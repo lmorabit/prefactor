@@ -127,7 +127,7 @@ def main(ms_input, DirSkymodelCal, extensionSky=".skymodel", max_separation_arcm
     {'SkymodelCal':skymodelCal} : "dict"
         Path to the skymodel of the calibrator
     """
-
+    max_separation_arcmin = float(max_separation_arcmin)
     if os.path.isfile(DirSkymodelCal) or os.path.isdir(DirSkymodelCal):
         ra, dec = grab_pointing(input2strlist_nomapfile(ms_input)[0])
         skymodelCal, skymodelName  = find_skymodel(ra, dec, DirSkymodelCal, extensionSky, max_separation_arcmin)
