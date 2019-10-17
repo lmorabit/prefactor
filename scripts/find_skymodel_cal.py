@@ -105,7 +105,7 @@ def input2strlist_nomapfile(invar):
    return str_list
 
 ########################################################################
-def main(ms_input, DirSkymodelCal, extensionSky=".skymodel", max_separation_arcmin = 1.0):
+def main(ms_input, DirSkymodelCal, mapfile_dir='', extensionSky=".skymodel", max_separation_arcmin = 1.0):
 
     """
     Find automatically the skymodel to use for the Calibrator
@@ -117,6 +117,8 @@ def main(ms_input, DirSkymodelCal, extensionSky=".skymodel", max_separation_arcm
         String from the list (map) of the calibrator MSs
     DirSkymodelCal : str
         Path to the skymodel file, or to the folder where the skymodels are stored
+    mapfile_dir : str
+        Path of directory in which to write output mapfiles
     [extensionSky] :  str
         Default: ".skymodel"
         extension of the skymodel files

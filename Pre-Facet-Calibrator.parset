@@ -285,6 +285,7 @@ sky_cal.control.error_tolerance                             =   {{ error_toleran
 sky_cal.control.mapfile_in                                  =   combine_data_cal_map.output.mapfile
 sky_cal.control.inputkey                                    =   msfile
 sky_cal.argument.flags                                      =   [msfile]
+sky_cal.argument.mapfile_dir                                =   input.output.mapfile_dir
 sky_cal.argument.DirSkymodelCal                             =   {{ calibrator_path_skymodel }}
 sky_cal.argument.max_separation_arcmin                      =   {{ max_separation_arcmin }}
 
