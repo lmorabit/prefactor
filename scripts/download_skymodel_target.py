@@ -83,6 +83,8 @@ def main(ms_input, SkymodelPath, Radius="5.", DoDownload="True", Source="TGSS"):
     if (not FileExists and os.path.exists(SkymodelPath)):
         raise ValueError("download_tgss_skymodel_target: Path: \"%s\" exists but is not a file!"%(SkymodelPath))
     download_flag = False
+    if not os.path.exists(os.path.dirname(SkymodelPath)):
+        os.makedirs(os.path.dirname(SkymodelPath))
     if DoDownload.upper() == "FORCE":
         if FileExists:
             os.remove(SkymodelPath)
@@ -138,10 +140,12 @@ if __name__ == '__main__':
                         help='Radius for the TGSS/GSM cone search in degrees')
     parser.add_argument('--Source', type=str, default='TGSS',
                         help='Choose source for skymodel: TGSS or GSM')
+    parser.add_argument('--DoDownload', type=str, default="True",
+                        help='Download or not the TGSS skymodel or GSM ("Force" or "True" or "False").')
 
     args = parser.parse_args()
     radius=5
     if args.Radius:
         radius=args.Radius
 
-    main(args.MSfile,args.SkyTar, str(radius), args.Source)
+    main(args.MSfile, args.SkyTar, str(radius), args.DoDownload, args.Source)

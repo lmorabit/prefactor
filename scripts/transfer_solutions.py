@@ -7,9 +7,9 @@ from losoto.lib_operations import *
 import os
 import re
 import numpy
+import subprocess
 ########################################################################
-def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='amplitude000', outsoltab='amplitude000', antenna = '[FUSPID].*', trusted_sources = ['3C48', '3C147']):
-
+def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='amplitude000', outsoltab='amplitude000', antenna = '[FUSPID].*', trusted_sources = ['3C48', '3C147'], parset = None):
 
     ### Open up the h5parm, get an example value
     data           = h5parm(h5parmdb, readonly=False)
@@ -27,22 +27,26 @@ def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='a
     calibrator = numpy.unique(calibrators)
     if len(calibrator) > 1:
         logging.error('There is more than one calibrator used in the target solution set: ' + str(calibrator) + '. No solutions will be transferred.')
-        return(1)
-    calibrator = calibrator[0]
-    if type(calibrator) is bytes or type(calibrator) is numpy.bytes_:
-        calibrator = calibrator.decode()
-    if calibrator.upper() in trusted_sources:
-        logging.info(calibrator + ' is a trusted calibrator source. No solutions from a reference solution set will be transferred!')
+        data.close()
+        refdata.close()
+        return 1
+    if calibrator[0].upper() in trusted_sources:
+        logging.info(calibrator[0] + ' is a trusted calibrator source. No solutions from a reference solution set will be transferred!')
+        data.close()
+        refdata.close()
         return(0)
     else:
-        logging.info(calibrator + ' is not a trusted calibrator source. Solutions from a reference solution set will be transferred!')
+        logging.info(calibrator[0] + ' is not a trusted calibrator source. Solutions from a reference solution set will be transferred!')
+
 
     ### check for matching antennas
     station_names      = outsoltab.ant
     stations_to_transfer = [ station_name for station_name in station_names if re.match(antenna, station_name) ]
     if len(stations_to_transfer) == 0:
         logging.warning('No stations found matching the regular expression: ' + antenna)
-        return(0)
+        data.close()
+        refdata.close()
+        return 0
 
     ### Properly define axes order
     out_axes          = outsoltab.getAxesNames()
@@ -71,6 +75,8 @@ def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='a
     freq_resolution = numpy.unique(numpy.diff(outsoltab.freq))
     if len(freq_resolution) > 1:
         logging.error('Frequency axis is not equidistant!')
+        data.close()
+        refdata.close()
         return(1)
 
     ### look for nearest neighbours in frequency and write them into a dictionary
@@ -113,6 +119,25 @@ def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='a
     outsoltab.addHistory('Transferred solutions from ' + os.path.basename(refh5parm) + ' for the stations ' + str(stations_to_transfer).lstrip('[').rstrip(']') )
     outsoltab.flush()
 
+    ### plotting new tables if provided
+    if parset:
+        if os.path.exists(parset):
+            download  = subprocess.Popen(['losoto',  '-v', h5parmdb, parset], stdout=subprocess.PIPE)
+            errorcode = download.wait()
+            if errorcode != 0:
+                logging.error('An error has occured while plotting.')
+                data.close()
+                refdata.close()
+                return 1
+        else:
+            logging.error('Parset file ' + parset + ' has not been found.')
+            data.close()
+            refdata.close()
+            return 1
+
+    data.close()
+    refdata.close()
+    return 0
 
 ########################################################################
 if __name__ == '__main__':
@@ -131,7 +156,7 @@ if __name__ == '__main__':
                         help='Name of the input h5parm solution set (default: amplitude000)')
     parser.add_argument('--outsoltab', '--outsoltab', type=str, default='amplitude000',
                         help='Name of the output h5parm solution set (default: amplitude000)')
-    parser.add_argument('--antenna', '--antenna', type=str, default='[CR]S*',
+    parser.add_argument('--antenna', '--antenna', type=str, default='[FUSPID].*',
                         help='Regular expression of antenna solutions to be transferred (default: [FUSPID].*)')
 
     args = parser.parse_args()
@@ -146,4 +171,4 @@ if __name__ == '__main__':
 
     logging.info('Transferring solutions from ' +  args.refh5parm + ' to ' + args.h5parm + '.')
     logging.info('Solutions will be transferred from soltab ' + str(args.insoltab) + ' to ' + str(args.outsoltab) + '.')
-    main(args.h5parm, refh5parm = args.refh5parm, insolset=args.insolset, outsolset=args.outsolset, insoltab=args.insoltab, outsoltab=args.outsoltab, antenna = args.antenna)
+    main(args.h5parm, refh5parm = args.refh5parm, insolset=args.insolset, outsolset=args.outsolset, insoltab=args.insoltab, outsoltab=args.outsoltab, antenna = args.antenna, parset = None)

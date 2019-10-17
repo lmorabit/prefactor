@@ -25,7 +25,7 @@ def grab_pointing(MS):
         NB: we suppose that all the calibrators' observations have this field filled in (MS/Observation, column LOFAR_TARGET)
     """
 
-    [ra, dec] = pt.table(MS+'/FIELD', readonly=True, ack=False).getcol('PHASE_DIR')[0][0] * 180 / math.pi
+    [ra, dec] = pt.table(MS+'::FIELD', readonly=True, ack=False).getcol('PHASE_DIR')[0][0] * 180 / math.pi
     return ra, dec
 
 
@@ -70,12 +70,11 @@ def find_skymodel(ra, dec, PathSkyMod, extensionSky = ".skymodel", max_separatio
         Full name (with path) to the matching skymodel
     """
 
-
-    skymodels = glob.glob(PathSkyMod + "/*" + extensionSky)
-
-    # remove any Ateam models from the listing (only in filenames)
-    #skymodels = [s for s in skymodels if 'Ateam' not in s]
-    #skymodels = [s for s in skymodels if 'A-Team' not in s]
+    if os.path.isfile(PathSkyMod):
+        print("Checking the skymodel provided: " + PathSkyMod)
+        skymodels = [PathSkyMod]
+    else:
+        skymodels = glob.glob(PathSkyMod + "/*" + extensionSky)
 
     for skymodel in skymodels:
         check = check_skymodel(skymodel, ra, dec, max_separation_arcmin)
@@ -106,7 +105,7 @@ def input2strlist_nomapfile(invar):
    return str_list
 
 ########################################################################
-def main(ms_input, DirSkymodelCal, mapfile_dir='', extensionSky=".skymodel", max_separation_arcmin = 1.0):
+def main(ms_input, DirSkymodelCal, extensionSky=".skymodel", max_separation_arcmin = 1.0):
 
     """
     Find automatically the skymodel to use for the Calibrator
@@ -118,8 +117,6 @@ def main(ms_input, DirSkymodelCal, mapfile_dir='', extensionSky=".skymodel", max
         String from the list (map) of the calibrator MSs
     DirSkymodelCal : str
         Path to the skymodel file, or to the folder where the skymodels are stored
-    mapfile_dir : str
-        Path of directory in which to write output mapfiles
     [extensionSky] :  str
         Default: ".skymodel"
         extension of the skymodel files
@@ -131,11 +128,7 @@ def main(ms_input, DirSkymodelCal, mapfile_dir='', extensionSky=".skymodel", max
         Path to the skymodel of the calibrator
     """
 
-    if os.path.isfile(DirSkymodelCal):
-        print("Using the skymodel provided: " + DirSkymodelCal)
-        return { 'SkymodelCal' : DirSkymodelCal }
-
-    elif os.path.isdir(DirSkymodelCal):
+    if os.path.isfile(DirSkymodelCal) or os.path.isdir(DirSkymodelCal):
         ra, dec = grab_pointing(input2strlist_nomapfile(ms_input)[0])
         skymodelCal, skymodelName  = find_skymodel(ra, dec, DirSkymodelCal, extensionSky, max_separation_arcmin)
         map_out = DataMap([])

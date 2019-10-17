@@ -16,10 +16,14 @@ from losoto.h5parm import h5parm
 from losoto.lib_operations import *
 import logging
 
-def main(h5parmfile, solset='sol000', soltab_in='phase000', soltab_out='GSMphase'):
+def main(h5parmfile, refh5 = None, solset='sol000', refsolset='sol000', soltab_in='phase000', soltab_out='GSMphase', filter='[CR]S*&', bad_antennas='[CR]S*&'):
 
 
-    if not os.path.exists(h5parmfile):
+    if refh5 == None:
+        refh5 = h5parmfile
+        pass
+
+    if not os.path.exists(h5parmfile) or not os.path.exists(refh5):
         logging.error("H5parm file %s doesn't exist!" % h5parmfile)
         return 1
 
@@ -29,10 +33,14 @@ def main(h5parmfile, solset='sol000', soltab_in='phase000', soltab_out='GSMphase
 
     ### Open up the h5parm, get an example value
     data       = h5parm(h5parmfile, readonly = False)
+    refdata    = h5parm(refh5, readonly = False)
     solset     = data.getSolset(solset)
+    refsolset  = refdata.getSolset(refsolset)
 
     ### Get antenna information of the solset
-    new_station_names = sorted(solset.getAnt().keys())
+    ref_station_names = sorted(refsolset.getAnt().keys())
+    bad_antennas_list = bad_antennas.lstrip(filter).replace('!','').replace('*','').replace('&','').split(';')
+    new_station_names = [ ref_station_name for ref_station_name in ref_station_names if ref_station_name not in bad_antennas_list ]
 
     ### Load antenna list of input soltab
     logging.info('Processing solution table %s'%(soltab_in))
@@ -62,9 +70,11 @@ def main(h5parmfile, solset='sol000', soltab_in='phase000', soltab_out='GSMphase
             out_axes_vals.append(soltab.dir)
         else:
             logging.error('Unknown axis in soltab: ' + str(axis))
+            data.close()
+            refdata.close()
             return 1
 
-    ### just copy of number of antennas is the same
+    ### just copy if number of antennas is the same
     if len(new_station_names) == len(old_station_names):
         logging.warning('Station list in soltab ' + str(soltab_in) + ' matches the station list in the selected solset. Data will just be copied.')
         new_soltab = solset.makeSoltab(soltype=soltab_type, soltabName=soltab_out, axesNames=out_axes, axesVals=out_axes_vals, vals=vals, weights=weights)
@@ -93,21 +103,31 @@ def main(h5parmfile, solset='sol000', soltab_in='phase000', soltab_out='GSMphase
 
     else:
         logging.error('There are fewer antennas in the solset than in the soltab ' + str(soltab_in))
+        data.close()
+        refdata.close()
         return 1
 
+    data.close()
+    refdata.close()
     return 0
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Adds phases and amplitudes to any missing station if they appear in an h5parm, but not in a particular soltab.')
 
     parser.add_argument('h5parm', type=str,
                         help='H5parm to which this action should be performed .')
+    parser.add_argument('--refh5', type=str,
+                        help='External H5parm from which the full list of antennas is used from.')
     parser.add_argument('--solset', type=str, default='sol000',
 			help='Input calibration solutions')
+    parser.add_argument('--refsolset', type=str, default='sol000',
+			help='Input calibration solutions of the reference h5parm file')
     parser.add_argument('--soltab_in', type=str, default='phase000',
                         help='Input solution table')
     parser.add_argument('--soltab_out', type=str, default='GSMphase',
                         help='Output solution table (has to be different from input solution table)')
+
 
     args = parser.parse_args()
 
@@ -119,5 +139,5 @@ if __name__ == "__main__":
     log.setFormatter(format_stream)
     logging.root.addHandler(log)
 
-    main(h5parmfile=args.h5parm, solset=args.solset, soltab_in=args.soltab_in, soltab_out=args.soltab_out)
+    main(h5parmfile=args.h5parm, refh5=args.refh5, solset=args.solset, refsolset=args.refsolset, soltab_in=args.soltab_in, soltab_out=args.soltab_out)
 
