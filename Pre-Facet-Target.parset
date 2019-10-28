@@ -103,7 +103,7 @@ pipeline.steps              =  [prep, {{ clipATeam_step }} concat, prep_gsmcal, 
 pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, get_targetname, combine_data_target_map, check_Ateam_separation, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar, plotateamclip]
 pipeline.steps.concat      =  [combine_concat_map, ms_concat_target, expand_memory_map, aoflag, check_unflagged_subbands, combine_frac_map, plot_unflagged, combine_target_map, sortmap_target, dpppconcat]
-pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
+pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, add_missing_stations, h5exp_gsm, apply_phase]
 pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, add_missing_stations, h5exp_gsm,   apply_tec]
 pipeline.steps.finalize    =  [h5parm_name, structure_function, make_results_compress, make_summary]
@@ -512,28 +512,6 @@ check_unflagged_map.control.mapfile_dir                        =   input.output.
 check_unflagged_map.control.filename                           =   check_unflagged_map.mapfile
 check_unflagged_map.control.prune_str                          =   None
 
-# compress mapfiles for plotting
-combine_concat_map.control.kind                                =   plugin
-combine_concat_map.control.type                                =   compressMapfile
-combine_concat_map.control.mapfile_in                          =   dpppconcat.output.mapfile
-combine_concat_map.control.mapfile_dir                         =   {{ mapfile_dir }}
-combine_concat_map.control.filename                            =   combine_concat_map.mapfile
-
-# compress mapfiles for plotting
-combine_frac_map.control.kind                                  =   plugin
-combine_frac_map.control.type                                  =   compressMapfile
-combine_frac_map.control.mapfile_in                            =   check_unflagged.output.unflagged_fraction.mapfile
-combine_frac_map.control.mapfile_dir                           =   {{ mapfile_dir }}
-combine_frac_map.control.filename                              =   combine_frac_map.mapfile
-
-# plot the unflagged fraction
-plot_unflagged.control.type                                    =   pythonplugin
-plot_unflagged.control.executable                              =   {{ scripts }}/plot_unflagged_fraction.py
-plot_unflagged.control.mapfiles_in                             =   [combine_concat_map.output.mapfile,combine_frac_map.output.mapfile]
-plot_unflagged.control.inputkeys                               =   [msin,frac]
-plot_unflagged.argument.flags                                  =   [msin,frac]
-plot_unflagged.argument.outfile                                =   {{ inspection_directory }}/unflagged_fraction.png
-
 # if wished, download the tgss skymodel for the target
 sky_tar.control.type                                           =   pythonplugin
 sky_tar.control.executable                                     =   {{ scripts }}/download_skymodel_target.py
@@ -737,8 +715,7 @@ process_losoto_gsmcal.control.inputkey                         =   h5in
 process_losoto_gsmcal.argument.flags                           =   [h5in,{{ job_directory }}/losoto.parset]
 
 # add missing stations to the soltab if any
-add_missing_stations.control.kind                              =   recipe
-add_missing_stations.control.type                              =   executable_args
+add_missing_stations.control.type                              =   pythonplugin
 add_missing_stations.control.inplace                           =   True
 add_missing_stations.control.executable                        =   {{ scripts }}/add_missing_stations.py
 add_missing_stations.control.error_tolerance                   =   {{ error_tolerance }}
