@@ -39,11 +39,6 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
     data    = h5parm(h5parmfile)
     solset  = data.getSolset(solset)
     soltab  = solset.getSoltab(soltab)
-    soltype = soltab.getType()
-    if soltype != 'phase':
-        logging.warning("Soltab is of type " + soltype + ", but should be phase. Skipping.")
-        data.close()
-        return(0)
     vals  = soltab.val
     station_names = soltab.ant[:]
     stations = solset.getAnt()
@@ -56,13 +51,12 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
     timestep=int(nrtimes/nr_grid)
     for vals, coord, selection in soltab.getValuesIter(returnAxes=soltab.getAxesNames(), weight=False):
         try:
-            vals = reorderAxes( vals, soltab.getAxesNames(), ['time', 'ant', 'freq', 'pol', 'dir'])
-            vals = vals[:,:,:,:,0]
+            vals = reorderAxes( vals, soltab.getAxesNames(), ['pol', 'ant', 'time', 'freq','dir'])
         except:
-            vals = reorderAxes( vals, soltab.getAxesNames(), ['time', 'ant', 'freq', 'pol'])
+            vals = reorderAxes( vals, soltab.getAxesNames(), ['pol', 'ant', 'time', 'freq'])
 
-    valx = vals[0]
-    valy = vals[1]
+    valx = np.squeeze(vals[0])
+    valy = np.squeeze(vals[1])
     for i,station_name in enumerate(station_names):
         if "CS" not in station_name:
             continue
@@ -117,7 +111,7 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
         if doplot:
             x=D2[myselect]
             y=dvarx[myselect]
-            subplot(3,1,1)
+            subplot(2,1,1)
             scatter(x,y,color='b')
             if dofilter:
                 y2 = y[flagselect]
@@ -139,9 +133,6 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
             xscale("log")
             yscale("log")
             xlim(30,4000)
-            xlabel('baseline length [m]')
-            ylabel('XX phase variance [rad$^2$]')
-            title('XX diffractive scale:  %3.1f km'%(float(S0)/1000.))
         myselect=np.logical_and(D2y>0,np.logical_and(np.any(np.logical_and(dvary>1e-7,dvary<.1),axis=0)[np.newaxis],np.any(np.logical_and(dvary>1e-7,dvary<.1),axis=1)[:,np.newaxis]))
         if dofilter:
             x=D2y[myselect]
@@ -166,7 +157,7 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
         if doplot:
             x=D2y[myselect]
             y=dvary[myselect]
-            subplot(3,1,3)
+            subplot(2,1,2)
             scatter(x,y,color='b')
             if dofilter:
                 y2 = y[flagselect]
@@ -188,16 +179,12 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
             xscale("log")
             yscale("log")
             xlim(30,4000)
-            xlabel('baseline length [m]')
-            ylabel('YY phase variance [rad$^2$]')
-            title('YY diffractive scale:  %3.1f km'%(float(S0y)/1000.))
             savefig(output_dir + '/' + outbasename + '_structure.png')
             close()
             cla()
         S0s.append([S0,S0y])
         betas.append([par[1],pary[1]])
         outfile.write('S0s ****%s**** %s beta %s %s\n'%(S0,S0y,par[1],pary[1]))
-    data.close()
     return(0)
 
 
