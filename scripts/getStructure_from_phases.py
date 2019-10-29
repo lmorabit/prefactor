@@ -35,7 +35,7 @@ def residuals(coeffs, y, t):
     return y - model(t, coeffs)
 
 def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outbasename='ionosphere',output_dir='./',dofilter=True):
-    outfile = open(str(output_dir) + '/' + outbasename +'_structure.txt','w')
+    outfile = open(str(output_dir) + '/' + outbasename +'_structure.txt', 'w')
     data    = h5parm(h5parmfile)
     solset  = data.getSolset(solset)
     soltab  = solset.getSoltab(soltab)
@@ -47,40 +47,42 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
     vals  = soltab.val
     station_names = soltab.ant[:]
     stations = solset.getAnt()
-    phx=[]
-    phy=[]
-    allposx=[]
-    allposy=[]
+    phx = []
+    phy = []
+    allposx = []
+    allposy = []
     nrtimes = len(soltab.time)
-    nrfreqss = len(soltab.freq)
+    nrfreqs = len(soltab.freq)
     timestep=int(nrtimes/nr_grid)
     for vals, coord, selection in soltab.getValuesIter(returnAxes=soltab.getAxesNames(), weight=False):
         try:
-            vals = reorderAxes( vals, soltab.getAxesNames(), ['time', 'ant', 'freq', 'pol', 'dir'])
-            vals = vals[:,:,:,:,0]
+            vals = reorderAxes( vals, soltab.getAxesNames(), ['dir', 'pol', 'ant', 'time', 'freq'])
+            vals = vals[0]
         except:
-            vals = reorderAxes( vals, soltab.getAxesNames(), ['time', 'ant', 'freq', 'pol'])
+            vals = reorderAxes( vals, soltab.getAxesNames(), ['pol', 'ant', 'time', 'freq'])
 
-    valx = vals[0]
-    valy = vals[1]
+    valsx = vals[0]
+    valsy = vals[1]
     for i,station_name in enumerate(station_names):
         if "CS" not in station_name:
             continue
-        phx.append(valx[i,:,0].flatten())
+        valx = valsx[i,:,0].flatten()
+        valy = valsy[i,:,0].flatten()
+        phx.append(np.nan_to_num(valx))
+        phy.append(np.nan_to_num(valy))
         allposx.append(stations[station_name.encode()])
-        phy.append(valy[i,:,0].flatten())
         allposy.append(stations[station_name.encode()])
 
-    phx=np.array(phx)
-    phy=np.array(phy)
-    allposx=np.array(allposx)
-    allposy=np.array(allposy)
-    D=allposx[:,np.newaxis,:]-allposx[np.newaxis,:]
-    D2=np.sqrt(np.sum(D**2,axis=-1))
-    Dy=allposy[:,np.newaxis,:]-allposy[np.newaxis,:]
-    D2y=np.sqrt(np.sum(Dy**2,axis=-1))
-    S0s=[]
-    betas=[]
+    phx = np.array(phx)
+    phy = np.array(phy)
+    allposx = np.array(allposx)
+    allposy = np.array(allposy)
+    D = allposx[:,np.newaxis,:]-allposx[np.newaxis,:]
+    D2 = np.sqrt(np.sum(D**2,axis=-1))
+    Dy = allposy[:,np.newaxis,:]-allposy[np.newaxis,:]
+    D2y = np.sqrt(np.sum(Dy**2,axis=-1))
+    S0s = []
+    betas = []
     for itime in range(nr_grid+1):
         tm=[0,1000000000]
         if itime<nr_grid:
