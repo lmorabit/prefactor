@@ -136,7 +136,6 @@ def main(ms_input, min_separation = 30, outputimage = None):
             print(target['name'] + ': ' + str(me.separation(pointing, direction)))
             if int(float(min_separation)) > int(float(str(me.separation(pointing, direction)).split(' deg')[0])):
                 print('WARNING: The A-Team source ' + target['name'] + ' is closer than ' + str(min_separation) + ' deg to the phase reference center. Calibration might not perform as expected.')
-
     print('------------------------------')
     pylab.title('Pointing Elevation')
     pylab.title('Elevation')
@@ -146,11 +145,11 @@ def main(ms_input, min_separation = 30, outputimage = None):
 
     if outputimage != None:
         inspection_directory = os.path.dirname(outputimage)
-        if not os.path.exists(inspection_directory):
+        if not os.path.exists(inspection_directory) and inspection_directory != '':
             os.makedirs(inspection_directory)
-            print("Directory" , inspection_directory ,  "created.")
-        else:
-            print("Directory", inspection_directory,  "already exists.")
+            print('Directory ' + inspection_directory +  ' created.')
+        elif inspection_directory != '':
+            print('Directory ' + inspection_directory + ' already exists.')
         print('Plotting A-Team elevation to: ' + outputimage)
         pylab.savefig(outputimage)
     return 0
@@ -169,4 +168,4 @@ if __name__ == '__main__':
 
     main(args.MSfile, args.min_separation, args.outputimage)
 
-    pass
+
