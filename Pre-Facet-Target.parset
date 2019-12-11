@@ -684,7 +684,6 @@ prepare_losoto_tec.control.kind                                =   plugin
 prepare_losoto_tec.control.type                                =   makeLosotoParset
 prepare_losoto_tec.control.steps                               =   [duplicatePbkp,plotTEC1,dejump,plotTEC2]
 prepare_losoto_tec.control.filename                            =   {{ job_directory }}/losoto.parset
-prepare_losoto_tec.control.global.ncpu                         =   {{ num_proc_per_node }}
 prepare_losoto_tec.control.duplicatePbkp.operation             =   DUPLICATE
 prepare_losoto_tec.control.duplicatePbkp.soltab                =   sol000/tec000
 prepare_losoto_tec.control.duplicatePbkp.soltabOut             =   tecOrig000
