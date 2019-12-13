@@ -102,8 +102,8 @@ pipeline.steps              =  [prep, {{ clipATeam_step }} concat, prep_gsmcal, 
 # pipeline substeps
 pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, get_targetname, combine_data_target_map, check_Ateam_separation, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar, plotateamclip]
-pipeline.steps.concat      =  [combine_concat_map, ms_concat_target, expand_memory_map, aoflag, check_unflagged_subbands, combine_frac_map, plot_unflagged, combine_target_map, sortmap_target, dpppconcat]
-pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, smooth_data]
+pipeline.steps.concat      =  [combine_concat_map, ms_concat_target, expand_memory_map, aoflag, check_unflagged_subbands, combine_frac_map, plot_unflagged, combine_target_map, sortmap_target, check_bad_antennas, dpppconcat]
+pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, add_missing_stations, h5exp_gsm, apply_phase]
 pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, add_missing_stations, h5exp_gsm,   apply_tec]
 pipeline.steps.finalize    =  [h5parm_name, structure_function, make_results_compress, make_summary]
@@ -456,6 +456,12 @@ sortmap_target.argument.stepname                               =   dpppconcat
 sortmap_target.argument.firstSB                                =   {{ reference_stationSB }}
 sortmap_target.argument.truncateLastSBs                        =   False
 
+# check potential station mismatch
+check_bad_antennas.control.kind                                =   plugin
+check_bad_antennas.control.type                                =   identifyBadAntennas
+check_bad_antennas.control.mapfile_in                          =   input.output.mapfile_dir/sortmap_target_groups
+check_bad_antennas.control.filter                              =   {{ process_baselines_target }}
+
 # run NDPPP to concatenate the target
 dpppconcat.control.type                                        =   dp3
 dpppconcat.control.error_tolerance                             =   {{ error_tolerance }}
@@ -465,9 +471,9 @@ dpppconcat.control.inputkey                                    =   msin
 dpppconcat.argument.msin.datacolumn                            =   DATA
 dpppconcat.argument.msin.missingdata                           =   True    #\ these two lines will make NDPPP generate dummy data when
 dpppconcat.argument.msin.orderms                               =   False   #/ concatenating data
-dpppconcat.argument.msin.baseline                              =   {{ process_baselines_target }}
+dpppconcat.argument.msin.baseline                              =   check_bad_antennas.output.filter
 dpppconcat.argument.filter.type                                =   filter
-dpppconcat.argument.filter.baseline                            =   {{ process_baselines_target }}
+dpppconcat.argument.filter.baseline                            =   check_bad_antennas.output.filter
 dpppconcat.argument.filter.remove                              =   True
 dpppconcat.argument.msout.datacolumn                           =   DATA
 dpppconcat.argument.msout.writefullresflag                     =   False
@@ -497,12 +503,6 @@ check_unflagged.argument.flags                                 =   [combine_conc
 check_unflagged.argument.filename                              =   check_unflagged_files.mapfile
 check_unflagged.argument.mapfile_dir                           =   input.output.mapfile_dir
 check_unflagged.argument.min_fraction                          =   {{ min_unflagged_fraction }}
-
-# check potential station mismatch
-check_bad_antennas.control.kind                                =   plugin
-check_bad_antennas.control.type                                =   identifyBadAntennas
-check_bad_antennas.control.mapfile_in                          =   input.output.mapfile_dir/sortmap_target_groups
-check_bad_antennas.control.filter                              =   {{ filter_baselines }}
 
 # prune flagged files from mapfile
 check_unflagged_map.control.kind                               =   plugin
@@ -576,7 +576,6 @@ gsmcal_phase.control.inplace                                   =   True
 gsmcal_phase.control.mapfiles_in                               =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
 gsmcal_phase.control.inputkeys                                 =   [input_file,sourcedb,parmdb]
 gsmcal_phase.argument.msin                                     =   input_file
-gsmcal_phase.argument.msin.baseline                            =   check_bad_antennas.output.filter
 gsmcal_phase.argument.msin.datacolumn                          =   SMOOTHED_DATA
 gsmcal_phase.argument.steps                                    =   [filter,gaincal]
 gsmcal_phase.argument.filter.type                              =   filter
@@ -602,7 +601,6 @@ gsmcal_tec.control.inplace                                     =   True
 gsmcal_tec.control.mapfiles_in                                 =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
 gsmcal_tec.control.inputkeys                                   =   [input_file,sourcedb,parmdb]
 gsmcal_tec.argument.msin                                       =   input_file
-gsmcal_tec.argument.msin.baseline                              =   check_bad_antennas.output.filter
 gsmcal_tec.argument.msin.datacolumn                            =   SMOOTHED_DATA
 gsmcal_tec.argument.steps                                      =   [filter,ddecal]
 gsmcal_tec.argument.filter.type                                =   filter
