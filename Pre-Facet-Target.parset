@@ -820,7 +820,7 @@ structure_function.argument.output_dir                      =   {{ inspection_di
 make_results_compress.control.kind                             =   plugin
 make_results_compress.control.type                             =   compressMapfile
 make_results_compress.control.mapfile_in                       =   create_output_msfiles_map.output.mapfile
-make_results_compress.control.mapfile_dir                      =   {{ mapfile_dir }}
+make_results_compress.control.mapfile_dir                      =   input.output.mapfile_dir
 make_results_compress.control.filename                         =   make_results_compress.mapfile
 
 # make the summary file
