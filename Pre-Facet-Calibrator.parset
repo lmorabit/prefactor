@@ -777,7 +777,7 @@ process_losoto_bandpass2.control.type                        =   losoto
 process_losoto_bandpass2.control.error_tolerance             =   {{ error_tolerance }}
 process_losoto_bandpass2.control.mapfile_in                  =   h5imp_cal_bandpass2.output.mapfile
 process_losoto_bandpass2.control.inputkey                    =   h5in
-process_losoto_bandpass2.argument.flags                      =   [h5in,{{ job_directory }}/losoto_BP2.parset]
+process_losoto_bandpass2.argument.flags                      =   [-v,h5in,{{ job_directory }}/losoto_BP2.parset]
 
 # output the final soltab into an external h5parm
 h5exp_cal_bandpass.control.type                             =   h5parm_collector
@@ -925,7 +925,7 @@ prepare_losoto_ion1.control.residuals3.soltabsToSub          =   [tec,clock,tec3
 process_losoto_ion1.control.type                             =   losoto
 process_losoto_ion1.control.mapfile_in                       =   createmap_chunks2.output.mapfile
 process_losoto_ion1.control.inputkey                         =   h5in
-process_losoto_ion1.argument.flags                           =   [h5in,{{ job_directory }}/losoto_ion1.parset]
+process_losoto_ion1.argument.flags                           =   [-v,h5in,{{ job_directory }}/losoto_ion1.parset]
 
 # generate a mapfile with all files in a single entry
 h5imp_cal_map3.control.kind                                  =   plugin
@@ -1036,7 +1036,7 @@ prepare_losoto_ion2.control.flagstation.soltabExport         =   clock
 process_losoto_ion2.control.type                             =   losoto
 process_losoto_ion2.control.mapfile_in                       =   h5imp_cal_ion2.output.mapfile
 process_losoto_ion2.control.inputkey                         =   h5in
-process_losoto_ion2.argument.flags                           =   [h5in,{{ job_directory }}/losoto_ion2.parset]
+process_losoto_ion2.argument.flags                           =   [-v,h5in,{{ job_directory }}/losoto_ion2.parset]
 
 # output the final soltab into an external h5parm
 h5exp_cal_ion.control.type                                  =   h5parm_collector
