@@ -248,7 +248,7 @@ prepare_losoto_RMextract.control.plotRM.prefix                 =   {{ inspection
 process_losoto_RMextract.control.type                          =   losoto
 process_losoto_RMextract.control.mapfile_in                    =   combine_data_target_map.output.mapfile
 process_losoto_RMextract.control.inputkey                      =   input
-process_losoto_RMextract.argument.flags                        =   [{{ cal_solutions }}, {{ job_directory }}/losoto.parset]
+process_losoto_RMextract.argument.flags                        =   [-v,{{ cal_solutions }}, {{ job_directory }}/losoto.parset]
 
 
 #############################
@@ -690,7 +690,7 @@ prepare_losoto_tec.control.plotTEC1.soltab                     =   sol000/tec000
 prepare_losoto_tec.control.plotTEC1.axesInPlot                 =   time
 prepare_losoto_tec.control.plotTEC1.axisInTable                =   ant
 prepare_losoto_tec.control.plotTEC1.plotFlag                   =   True
-prepare_losoto_tec.control.plotTEC1.minmax                     =   [-0.5,0.5]
+# prepare_losoto_tec.control.plotTEC1.minmax                     =   [-0.5,0.5]
 prepare_losoto_tec.control.plotTEC1.prefix                     =   {{ inspection_directory }}/tec
 prepare_losoto_tec.control.plotTEC1.refAnt                     =   {{ refant }}
 prepare_losoto_tec.control.dejump.operation                    =   TECJUMP
@@ -701,7 +701,7 @@ prepare_losoto_tec.control.plotTEC2.soltab                     =   sol000/tec000
 prepare_losoto_tec.control.plotTEC2.axesInPlot                 =   time
 prepare_losoto_tec.control.plotTEC2.axisInTable                =   ant
 prepare_losoto_tec.control.plotTEC2.plotFlag                   =   True
-prepare_losoto_tec.control.plotTEC2.minmax                     =   [-0.5,0.5]
+# prepare_losoto_tec.control.plotTEC2.minmax                     =   [-0.5,0.5]
 prepare_losoto_tec.control.plotTEC2.prefix                     =   {{ inspection_directory }}/tec_nojump
 prepare_losoto_tec.control.plotTEC2.refAnt                     =   {{ refant }}
 
@@ -709,7 +709,7 @@ prepare_losoto_tec.control.plotTEC2.refAnt                     =   {{ refant }}
 process_losoto_gsmcal.control.type                             =   losoto
 process_losoto_gsmcal.control.mapfile_in                       =   h5imp_gsmcal.output.mapfile
 process_losoto_gsmcal.control.inputkey                         =   h5in
-process_losoto_gsmcal.argument.flags                           =   [h5in,{{ job_directory }}/losoto.parset]
+process_losoto_gsmcal.argument.flags                           =   [-v,h5in,{{ job_directory }}/losoto.parset]
 
 # add missing stations to the soltab if any
 add_missing_stations.control.type                              =   pythonplugin
