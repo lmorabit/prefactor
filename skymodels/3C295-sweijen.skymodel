@@ -1,10 +1,11 @@
+# (Name, Type, Patch, Ra, Dec, I, SpectralIndex, LogarithmicSI, ReferenceFrequency='148045349.121094', MajorAxis, MinorAxis, Orientation) = format
+
 # This model of 3C 295 was created by Frits Sweijen.
 # A pointed 8 hour synthesis observation was taken early 2019 (surveys setup in terms of subbands) and all available international (DE, FR, IE, UK, PL, SE) stations were present.
 # Selfcal was done using the full bandwidth from about 121 MHz up to 168 MHz, using DPPP and WSClean.
 # WSClean's -spectral-correction option was used to try and keep the model at least somewhat near the Scaife&Heald scale, but no guarantees are given.
 # The bandpasses are not perfect yet, but are a lot better compared to the current two-component model.
 # If you want to share this model, please ask me first as it is planned to be used in a publication at some point.
-# (Name, Type, Patch, Ra, Dec, I, SpectralIndex, LogarithmicSI, ReferenceFrequency='148045349.121094', MajorAxis, MinorAxis, Orientation) = format
  , , patch, 14:11:20.64, +52.12.09.30
 s0c0,POINT,patch,-09:48:39.26,52.12.07.035,-0.00624635170309155,[-0.00289670550238593,0.0411579827182412],false,148045349.121094,,,
 s0c1,POINT,patch,-09:48:39.268,52.12.07.035,-0.00163571821743523,[0.000884174477205206,-0.00413885299872788],false,148045349.121094,,,
