@@ -1,4 +1,4 @@
-# (Name, Patch, Type, Ra, Dec, I, Q, U, V, SpectralIndex=[], LogarithmicSI, ReferenceFrequency='150.e6', MajorAxis, MinorAxis, Orientation) = format
+# (Name, Patch, Type, Ra, Dec, I, Q, U, V, SpectralIndex='[]', LogarithmicSI, ReferenceFrequency='150.e6', MajorAxis, MinorAxis, Orientation) = format
 #
 # This model of 3C 196 is made by deconvolving LOFAR HBA mid (116-171 MHz) + HBA high (230-244 MHz) at the same time,
 # using the WSClean MF MS deconvolution method (with auto-masking, etc).
